@@ -1,176 +1,106 @@
-import React, { useEffect, useState } from 'react';
-import './App.css';
+import React, { useState } from 'react';
 
 function App() {
-  const [todos, setTodos] = useState([]);
-  const [newTodo, setNewTodo] = useState('');
-  const [editId, setEditId] = useState(null);
-  const [editText, setEditText] = useState('');
+  const [tasks, setTasks] = useState([]);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [deadline, setDeadline] = useState('');
 
-  // Fetch todos from backend
-  useEffect(() => {
-    fetchTodos();
-  }, []);
+  const handleAddTask = () => {
+    if (!title) return;
 
-  const fetchTodos = () => {
-    fetch('http://127.0.0.1:8000/api/todos/')
-      .then((response) => response.json())
-      .then((data) => setTodos(data))
-      .catch((error) => console.error('Error fetching todos:', error));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (newTodo.trim() === '') return;
-
-    const todoData = {
-      title: newTodo,
-      completed: false,
-    };
-
-    fetch('http://127.0.0.1:8000/api/todos/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    setTasks([
+      ...tasks,
+      {
+        id: Date.now(),
+        title,
+        description,
+        deadline,
       },
-      body: JSON.stringify(todoData),
-    })
-      .then((response) => {
-        if (response.ok) {
-          setNewTodo('');
-          fetchTodos();
-        } else {
-          console.error('Failed to add todo');
-        }
-      })
-      .catch((error) => console.error('Error posting todo:', error));
+    ]);
+
+    setTitle('');
+    setDescription('');
+    setDeadline('');
   };
 
-  const handleDelete = (id) => {
-    fetch(`http://127.0.0.1:8000/api/todos/${id}/`, {
-      method: 'DELETE',
-    })
-      .then(() => fetchTodos())
-      .catch((error) => console.error('Error deleting todo:', error));
-  };
-
-  const handleToggle = (todo) => {
-    fetch(`http://127.0.0.1:8000/api/todos/${todo.id}/`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        ...todo,
-        completed: !todo.completed,
-      }),
-    })
-      .then(() => fetchTodos())
-      .catch((error) => console.error('Error toggling todo:', error));
-  };
-
-  const handleEdit = (todo) => {
-    fetch(`http://127.0.0.1:8000/api/todos/${todo.id}/`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        ...todo,
-        title: editText,
-      }),
-    })
-      .then(() => {
-        setEditId(null);
-        setEditText('');
-        fetchTodos();
-      })
-      .catch((error) => console.error('Error editing todo:', error));
+  const calculateDaysLeft = (dateString) => {
+    if (!dateString) return null;
+    const today = new Date();
+    const deadlineDate = new Date(dateString);
+    const diffTime = deadlineDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
   };
 
   return (
-    <div className="container">
-      <h1>My To-Do List</h1>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center px-4 py-10">
+      <h1 className="text-4xl font-bold mb-8 flex items-center">
+        📝 <span className="ml-2">My To-Do List</span>
+      </h1>
 
-      {/* Add Todo Form */}
-      <form onSubmit={handleSubmit} style={{ marginBottom: '24px' }}>
-        <input
-          type="text"
-          value={newTodo}
-          onChange={(e) => setNewTodo(e.target.value)}
-          placeholder="Add a new task..."
-          style={{
-            padding: '10px',
-            width: '80%',
-            borderRadius: '8px',
-            border: '1px solid #ccc',
-            marginRight: '10px',
-          }}
-        />
-        <button
-          type="submit"
-          style={{
-            padding: '10px 16px',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-          }}
-        >
-          Add
-        </button>
-      </form>
+      <div className="bg-white p-6 rounded-2xl shadow-md w-full max-w-3xl mb-8">
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <input
+            type="text"
+            placeholder="Task title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="flex-1 px-4 py-2 rounded-lg border border-gray-300"
+          />
+          <input
+            type="text"
+            placeholder="Description (optional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="flex-1 px-4 py-2 rounded-lg border border-gray-300"
+          />
+          <input
+            type="date"
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+            className="px-4 py-2 rounded-lg border border-gray-300"
+          />
+          <button
+            onClick={handleAddTask}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+          >
+            Add Task
+          </button>
+        </div>
+      </div>
 
-      {/* Todo List */}
-      <ul>
-        {todos.map((todo) => (
-          <li key={todo.id}>
-            {editId === todo.id ? (
-              <>
-                <input
-                  type="text"
-                  value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleEdit(todo);
-                    }
-                  }}
-                />
-                <button onClick={() => setEditId(null)}>Cancel</button>
-              </>
-            ) : (
-              <>
-                <span
-                  onClick={() => handleToggle(todo)}
-                  style={{
-                    textDecoration: todo.completed ? 'line-through' : 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {todo.title}
-                </span>
-                <button
-                  onClick={() => {
-                    setEditId(todo.id);
-                    setEditText(todo.title);
-                  }}
-                  style={{ marginLeft: '10px' }}
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={() => handleDelete(todo.id)}
-                  style={{ marginLeft: '10px' }}
-                >
-                  🗑️
-                </button>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
+      <div className="w-full max-w-3xl space-y-4">
+        {tasks.map((task) => {
+          const daysLeft = calculateDaysLeft(task.deadline);
+          const isExpired = daysLeft < 0;
+
+          return (
+            <div
+              key={task.id}
+              className="bg-white p-4 rounded-xl shadow flex justify-between items-start"
+            >
+              <div>
+                <h2 className="text-xl font-semibold">{task.title}</h2>
+                {task.description && (
+                  <p className="text-gray-600">{task.description}</p>
+                )}
+                {task.deadline && (
+                  <p
+                    className={`text-sm font-medium mt-2 ${
+                      isExpired ? 'text-red-600' : 'text-green-600'
+                    }`}
+                  >
+                    {isExpired
+                      ? 'Expired!'
+                      : `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`}
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
