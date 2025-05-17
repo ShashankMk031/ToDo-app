@@ -39,7 +39,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'todo',
+    'rest_framework.authtoken',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
+    'django.contrib.sites',     
+    'allauth',
+    'allauth.account',
 ]
+
+SITE_ID = 1 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -127,3 +135,6 @@ INSTALLED_APPS += ['corsheaders']
 MIDDLEWARE.insert(0, 'corsheaders.middleware.CorsMiddleware')
 
 CORS_ALLOW_ALL_ORIGINS = True 
+
+# Add Email Backend 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
