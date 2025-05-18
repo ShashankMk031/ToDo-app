@@ -1,4 +1,4 @@
-##Full-Stack To-Do Application
+## Full-Stack To-Do Application
 
 A simple full-stack to-do application built with Django for the backend API and React for frontend. This project demonstrates basic CRUD operations (Create, Read, Update, Delete) for tasks, with local development setup.
 
@@ -37,5 +37,6 @@ Follow these steps to get the application up and running on your local machine.
 If your code is in a Git repository:
 
 ```bash
-git clone <your-repository-url>
-cd <your-repository-name>
+git clone https://github.com/ShashankMk031/ToDo-app.git
+cd ToDo-app
+
